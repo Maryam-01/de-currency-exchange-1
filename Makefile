@@ -22,8 +22,7 @@ create-environment:
 	)
 	@echo ">>> Setting up VirtualEnv."
 	( \
-	    $(PIP) install -q virtualenv virtualenvwrapper; \
-	    virtualenv venv --python=$(PYTHON_INTERPRETER); \
+	    $(PYTHON_INTERPRETER) -m venv venv; \
 	)
 
 # Define utility variable to help calling Python from the virtual environment
@@ -42,16 +41,20 @@ requirements: create-environment
 ################################################################################################################
 # Set Up
 
+## Install pytest
+pytest:
+	$(call execute_in_env, $(PIP) install pytest)
+
 ## Install black
 black:
 	$(call execute_in_env, $(PIP) install black)
 
 ## Install coverage
 coverage:
-	$(call execute_in_env, $(PIP) install coverage)
+	$(call execute_in_env, $(PIP) install pytest-cov)
 
 ## Set up dev requirements (bandit, black)
-dev-setup: black coverage
+dev-setup: pytest black coverage
 
 # Build / Run
 
@@ -65,7 +68,7 @@ unit-test:
 
 ## Run the coverage check
 check-coverage:
-	$(call execute_in_env, PYTHONPATH=${PYTHONPATH} pytest --cov=src tests/)
+	$(call execute_in_env, PYTHONPATH=${PYTHONPATH} pytest --cov=src test/)
 
 ## Run all checks
 run-checks: run-black unit-test check-coverage
