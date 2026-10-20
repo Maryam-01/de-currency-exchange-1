@@ -1,30 +1,28 @@
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 
 
 def lambda_handler(event, context):
-    """Extracts the latest currency data from the API.
+    primary_url = (
+        "https://cdn.jsdelivr.net/npm/"
+        "@fawazahmed0/currency-api@latest/v1/currencies/eur.json"
+    )
 
-    In the first instance, the function only needs to extract the EUR/USD rate.
+    fallback_url = (
+        "https://latest.currency-api.pages.dev/"
+        "v1/currencies/eur.json"
+    )
 
-    Args:
-        event: an empty dictionary
-        context: context object provided by AWS
+    try:
+        response = requests.get(primary_url, timeout=10)
+        response.raise_for_status()
+        return response.json()
 
-    Returns:
-        dictionary e.g.
-        {
-                "date": "2024-07-30",
-                "eur": {
-                        "gbp": 0.84175906,
-                        "jpy": 166.80563884,
-                        "usd": 1.08167213,
-            ...
-                        }
-        }
-    """
-    # replace this code
-    print(requests.__version__)
-    return {
-        "date": "2024-07-30",
-        "eur": {"gbp": 0.84175906, "jpy": 166.80563884, "usd": 1.08167213},
-    }
+    except Exception:
+        response = requests.get(fallback_url, timeout=10)
+        response.raise_for_status()
+        return response.json()
